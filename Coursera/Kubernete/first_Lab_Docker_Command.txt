@@ -1,0 +1,35 @@
+
+
+============================
+
+How to create a Docker
+
+1) sudo docker build -t py-web-server:v1 .
+
+2) sudo docker run -d -p 8888:8888 --name py-web-server -h my-web-server py-web-server:v1
+
+3) curl http://localhost:8888
+
+4) sudo docker rm -f py-web-server
+
+=============================
+
+Deployar na GCP_PROJECT
+
+5) export GCP_PROJECT=`gcloud config list core/project --format='value(core.project)'`
+
+6) sudo docker build -t "gcr.io/${GCP_PROJECT}/py-web-server:v1" .
+
+7) sudo gcloud docker -- push gcr.io/${GCP_PROJECT}/py-web-server:v1
+
+=============================
+
+Dar permissao para ser usado Em qq projeto
+
+8) gsutil defacl ch -u AllUsers:R gs://artifacts.${GCP_PROJECT}.appspot.com
+
+9) gsutil acl ch -r -u AllUsers:R gs://artifacts.${GCP_PROJECT}.appspot.com
+
+10) gsutil acl ch -u AllUsers:R gs://artifacts.${GCP_PROJECT}.appspot.com
+
+11) sudo docker run -d -p 8888:8888 -h my-web-server gcr.io/${GCP_PROJECT}/py-web-server:v1
