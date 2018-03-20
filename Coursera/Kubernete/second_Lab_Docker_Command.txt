@@ -1,0 +1,1012 @@
+
+
+
+gcloud config list account
+
+[core]
+account = google294327_student@qwiklabs.net
+
+Your active configuration is: [cloudshell-23082]
+
+
+gcloud config list project
+
+[core]
+project = qwiklabs-gcp-d2aafa63878ef8c9
+Your active configuration is: [cloudshell-23082]
+
+
+gcloud config set compute/zone <your-zone>
+
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ gcloud config set compute/zone us-central1-a
+Updated property [compute/zone].
+
+gcloud config list
+
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ gcloud config list
+[component_manager]
+disable_update_check = True
+[compute]
+gce_metadata_read_timeout_sec = 5
+zone = us-central1-a
+[core]
+account = google294327_student@qwiklabs.net
+check_gce_metadata = False
+disable_usage_reporting = False
+project = qwiklabs-gcp-d2aafa63878ef8c9
+[metrics]
+environment = devshell
+Your active configuration is: [cloudshell-23082]
+
+
+git clone https://github.com/googlecodelabs/orchestrate-with-kubernetes.git
+
+Cloning into 'orchestrate-with-kubernetes'...
+remote: Counting objects: 90, done.
+remote: Total 90 (delta 0), reused 0 (delta 0), pack-reused 90
+Unpacking objects: 100% (90/90), done.
+
+cd orchestrate-with-kubernetes/kubernetes
+
+ls
+
+================================================================================
+
+gcloud container clusters create bootcamp --num-nodes 5 --scopes "https://www.googleapis.com/auth/projecthosting,storage-rw"
+
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ gcloud container clusters create bootcamp --num-nodes 5 --scopes "https://www.googleapis.com/auth/projecthosting,storage-rw"
+WARNING: The behavior of --scopes will change in a future gcloud release: service-control and service-management scopes will no longer be added to what is specified in --scopes. To use these scopes, add them explicitly to --scopes. To use the n
+ew behavior, set container/new_scopes_behavior property (gcloud config set container/new_scopes_behavior true).
+WARNING: Starting in Kubernetes v1.10, new clusters will no longer get compute-rw and storage-ro scopes added to what is specified in --scopes (though the latter will remain included in the default --scopes). To use these scopes, add them expli
+citly to --scopes. To use the new behavior, set container/new_scopes_behavior property (gcloud config set container/new_scopes_behavior true).
+
+Created [https://container.googleapis.com/v1/projects/qwiklabs-gcp-d2aafa63878ef8c9/zones/us-central1-a/clusters/bootcamp].
+To inspect the contents of your cluster, go to: https://console.cloud.google.com/kubernetes/workload_/gcloud/us-central1-a/bootcamp?project=qwiklabs-gcp-d2aafa63878ef8c9
+kubeconfig entry generated for bootcamp.
+NAME      LOCATION       MASTER_VERSION  MASTER_IP     MACHINE_TYPE   NODE_VERSION  NUM_NODES  STATUS
+bootcamp  us-central1-a  1.8.8-gke.0     35.225.19.93  n1-standard-1  1.8.8-gke.0   5          RUNNING
+
+kubectl version
+
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl version
+Client Version: version.Info{Major:"1", Minor:"8", GitVersion:"v1.8.6", GitCommit:"6260bb08c46c31eea6cb538b34a9ceb3e406689c", GitTreeState:"clean", BuildDate:"2017-12-21T06:34:11Z", GoVersion:"go1.8.3", Compiler:"gc", Platform:"linux/amd64"}
+Server Version: version.Info{Major:"1", Minor:"8+", GitVersion:"v1.8.8-gke.0", GitCommit:"6e5b33a290a99c067003632e0fd6be0ead48b233", GitTreeState:"clean", BuildDate:"2018-02-16T18:26:58Z", GoVersion:"go1.8.3b4", Compiler:"gc", Platform:"linux/a
+md64"}
+
+kubectl cluster-info
+
+Kubernetes master is running at https://35.225.19.93
+GLBCDefaultBackend is running at https://35.225.19.93/api/v1/namespaces/kube-system/services/default-http-backend/proxy
+Heapster is running at https://35.225.19.93/api/v1/namespaces/kube-system/services/heapster/proxy
+KubeDNS is running at https://35.225.19.93/api/v1/namespaces/kube-system/services/kube-dns/proxy
+kubernetes-dashboard is running at https://35.225.19.93/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl
+annotate        attach          certificate     config          cp              describe        exec            get             options         port-forward    rolling-update  scale           top
+api-versions    auth            cluster-info    convert         create          drain           explain         label           patch           proxy           rollout         set             uncordon
+apply           autoscale       completion      cordon          delete          edit            expose          logs            plugin          replace         run             taint           version
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$
+
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl co
+completion  config      convert     cordon
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$
+
+
+source <(kubectl completion bash)
+
+kubectl <TAB><TAB>
+
+kubectl co<TAB><TAB>
+
+
+kubectl run nginx --image=nginx:1.10.0
+
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl run nginx --image=nginx:1.10.0
+deployment "nginx" created
+
+kubectl get pods
+
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl get pods
+NAME                    READY     STATUS    RESTARTS   AGE
+nginx-78687579d-9ccmd   1/1       Running   0          1m
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$
+
+kubectl expose deployment nginx --port 80 --type LoadBalancer
+
+service "nginx" exposed
+
+
+kubectl get services
+
+NAME         TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)        AGE
+kubernetes   ClusterIP      10.51.240.1     <none>           443/TCP        9m
+nginx        LoadBalancer   10.51.245.102   35.202.127.116   80:30063/TCP   1m
+
+
+kubectl scale deployment nginx --replicas 3
+
+deployment "nginx" scaled
+
+
+kubectl get pods
+
+NAME                    READY     STATUS    RESTARTS   AGE
+nginx-78687579d-2t4d5   1/1       Running   0          50s
+nginx-78687579d-9ccmd   1/1       Running   0          5m
+nginx-78687579d-cjcpg   1/1       Running   0          50s
+
+
+kubectl get services
+
+NAME         TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)        AGE
+kubernetes   ClusterIP      10.51.240.1     <none>           443/TCP        11m
+nginx        LoadBalancer   10.51.245.102   35.202.127.116   80:30063/TCP   4m
+
+curl http://<External IP>:80
+
+
+kubectl delete deployment nginx
+
+deployment "nginx" deleted
+
+kubectl delete service nginx
+
+service "nginx" deleted
+
+
+===============================================================
+kubectl explain pods
+
+DESCRIPTION:
+Pod is a collection of containers that can run on a host. This resource is created by clients and scheduled onto hosts.
+
+FIELDS:
+   spec <Object>
+     Specification of the desired behavior of the pod. More info: https://
+     git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status/
+
+   status       <Object>
+     Most recently observed status of the pod. This data may not be up to date.
+     Populated by the system. Read-only. More info: https://git.k8s.io/community/
+     contributors/devel/api-conventions.md#spec-and-status/
+
+   apiVersion   <string>
+     APIVersion defines the versioned schema of this representation of an
+     object. Servers should convert recognized schemas to the latest internal
+     value, and may reject unrecognized values. More info:
+     https://git.k8s.io/community/contributors/devel/api-conventions.md#resources
+
+   kind <string>
+     Kind is a string value representing the REST resource this object
+     represents. Servers may infer this from the endpoint the client submits
+     requests to. Cannot be updated. In CamelCase. More info:
+     https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
+
+   metadata     <Object>
+     Standard object's metadata. More info:
+     https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+	 
+	 
+	 
+cat pods/monolith.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: monolith
+  labels:
+    app: monolith
+spec:
+  containers:
+    - name: monolith
+      image: kelseyhightower/monolith:1.0.0
+      args:
+        - "-http=0.0.0.0:80"
+        - "-health=0.0.0.0:81"
+        - "-secret=secret"
+      ports:
+        - name: http
+          containerPort: 80
+        - name: health
+          containerPort: 81
+      resources:
+        limits:
+          cpu: 0.2
+          memory: "10Mi"
+
+kubectl explain pods.spec.containers
+
+
+RESOURCE: containers <[]Object>
+
+DESCRIPTION:
+     List of containers belonging to the pod. Containers cannot currently be
+     added or removed. There must be at least one container in a Pod. Cannot be
+     updated.
+
+    A single application container that you want to run within a pod.
+
+FIELDS:
+   command      <[]string>
+     Entrypoint array. Not executed within a shell. The docker image's
+     ENTRYPOINT is used if this is not provided. Variable references $(VAR_NAME)
+     are expanded using the container's environment. If a variable cannot be
+     resolved, the reference in the input string will be unchanged. The
+     $(VAR_NAME) syntax can be escaped with a double $$, ie: $$(VAR_NAME).
+     Escaped references will never be expanded, regardless of whether the
+     variable exists or not. Cannot be updated. More info: https://kubernetes.io/
+     docs/tasks/inject-data-application/define-command-argument-container/
+     #running-a-command-in-a-shell/
+
+   env  <[]Object>
+     List of environment variables to set in the container. Cannot be updated.
+
+   envFrom      <[]Object>
+     List of sources to populate environment variables in the container. The
+     keys defined within a source must be a C_IDENTIFIER. All invalid keys will
+     be reported as an event when the container is starting. When a key exists in
+     multiple sources, the value associated with the last source will take
+     precedence. Values defined by an Env with a duplicate key will take
+     precedence. Cannot be updated.
+
+   image        <string>
+     Docker image name. More info:
+     https://kubernetes.io/docs/concepts/containers/images This field is optional
+     to allow higher level config management to default or override container
+     images in workload controllers like Deployments and StatefulSets.
+
+   resources    <Object>
+     Compute Resources required by this container. Cannot be updated. More info:
+     https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources
+	 
+   terminationMessagePath       <string>
+     Optional: Path at which the file to which the container's termination
+     message will be written is mounted into the container's filesystem. Message
+     written is intended to be brief final status, such as an assertion failure
+     message. Will be truncated by the node if greater than 4096 bytes. The total
+     message length across all containers will be limited to 12kb. Defaults to
+     /dev/termination-log. Cannot be updated.
+
+   tty  <boolean>
+     Whether this container should allocate a TTY for itself, also requires
+     'stdin' to be true. Default is false.
+
+   args <[]string>
+     Arguments to the entrypoint. The docker image's CMD is used if this is not
+     provided. Variable references $(VAR_NAME) are expanded using the container's
+     environment. If a variable cannot be resolved, the reference in the input
+     string will be unchanged. The $(VAR_NAME) syntax can be escaped with a
+     double $$, ie: $$(VAR_NAME). Escaped references will never be expanded,
+     regardless of whether the variable exists or not. Cannot be updated. More
+     info: https://kubernetes.io/docs/tasks/inject-data-application/
+     define-command-argument-container/#running-a-command-in-a-shell/
+
+   workingDir   <string>
+     Container's working directory. If not specified, the container runtime's
+     default will be used, which might be configured in the container image.
+     Cannot be updated.
+
+   lifecycle    <Object>
+     Actions that the management system should take in response to container
+     lifecycle events. Cannot be updated.
+
+   stdinOnce    <boolean>
+     Whether the container runtime should close the stdin channel after it has
+     been opened by a single attach. When stdin is true the stdin stream will
+     remain open across multiple attach sessions. If stdinOnce is set to true,
+     stdin is opened on container start, is empty until the first client attaches
+     to stdin, and then remains open and accepts data until the client
+     disconnects, at which time stdin is closed and remains closed until the
+     container is restarted. If this flag is false, a container processes that
+     reads from stdin will never receive an EOF. Default is false
+
+   volumeMounts <[]Object>
+     Pod volumes to mount into the container's filesystem. Cannot be updated.
+
+   imagePullPolicy      <string>
+     Image pull policy. One of Always, Never, IfNotPresent. Defaults to Always
+     if :latest tag is specified, or IfNotPresent otherwise. Cannot be updated.
+     More info:
+     https://kubernetes.io/docs/concepts/containers/images#updating-images
+
+   name <string> -required-
+     Name of the container specified as a DNS_LABEL. Each container in a pod
+     must have a unique name (DNS_LABEL). Cannot be updated.
+	 
+   ports        <[]Object>
+     List of ports to expose from the container. Exposing a port here gives the
+     system additional information about the network connections a container
+     uses, but is primarily informational. Not specifying a port here DOES NOT
+     prevent that port from being exposed. Any port which is listening on the
+     default "0.0.0.0" address inside a container will be accessible from the
+     network. Cannot be updated.
+
+   livenessProbe        <Object>
+     Periodic probe of container liveness. Container will be restarted if the
+     probe fails. Cannot be updated. More info: https://kubernetes.io/docs/
+     concepts/workloads/pods/pod-lifecycle#container-probes/
+
+   securityContext      <Object>
+     Security options the pod should run with. More info:
+     https://kubernetes.io/docs/concepts/policy/security-context/ More info:
+     https://git.k8s.io/community/contributors/design-proposals/security_context.md
+
+   stdin        <boolean>
+     Whether this container should allocate a buffer for stdin in the container
+     runtime. If this is not set, reads from stdin in the container will always
+     result in EOF. Default is false.
+
+   terminationMessagePolicy     <string>
+     Indicate how the termination message should be populated. File will use the
+     contents of terminationMessagePath to populate the container status message
+     on both success and failure. FallbackToLogsOnError will use the last chunk
+     of container log output if the termination message file is empty and the
+     container exited with an error. The log output is limited to 2048 bytes or
+     80 lines, whichever is smaller. Defaults to File. Cannot be updated.
+
+   readinessProbe       <Object>
+     Periodic probe of container service readiness. Container will be removed
+     from service endpoints if the probe fails. Cannot be updated. More info:
+     https://kubernetes.io/docs/concepts/workloads/pods/
+     pod-lifecycle#container-probes/
+	 
+	 
+
+kubectl create -f pods/monolith.yaml
+
+pod "monolith" created
+
+kubectl get pods
+
+NAME       READY     STATUS    RESTARTS   AGE
+monolith   1/1       Running   0          19s
+
+
+kubectl describe
+
+You must specify the type of resource to describe. Valid resource types include:
+
+    * all
+    * certificatesigningrequests (aka 'csr')
+    * clusterrolebindings
+    * clusterroles
+    * clusters (valid only for federation apiservers)
+    * componentstatuses (aka 'cs')
+    * configmaps (aka 'cm')
+    * controllerrevisions
+    * cronjobs
+    * customresourcedefinition (aka 'crd')
+    * daemonsets (aka 'ds')
+    * deployments (aka 'deploy')
+    * endpoints (aka 'ep')
+    * events (aka 'ev')
+    * horizontalpodautoscalers (aka 'hpa')
+    * ingresses (aka 'ing')
+    * jobs
+    * limitranges (aka 'limits')
+    * namespaces (aka 'ns')
+    * networkpolicies (aka 'netpol')
+    * nodes (aka 'no')
+    * persistentvolumeclaims (aka 'pvc')
+    * persistentvolumes (aka 'pv')
+    * poddisruptionbudgets (aka 'pdb')
+    * podpreset
+    * pods (aka 'po')
+    * podsecuritypolicies (aka 'psp')
+    * podtemplates
+    * replicasets (aka 'rs')
+    * replicationcontrollers (aka 'rc')
+    * resourcequotas (aka 'quota')
+    * rolebindings
+    * roles
+    * secrets
+    * serviceaccounts (aka 'sa')
+    * services (aka 'svc')
+    * statefulsets
+    * storageclasses
+    error: Required resource not specified.
+See 'kubectl describe -h' for help and examples.
+
+
+kubectl port-forward
+
+error: POD is required for port-forward
+See 'kubectl port-forward -h' for help and examples.
+
+
+kubectl port-forward monolith 10080:80
+
+Forwarding from 127.0.0.1:10080 -> 80
+Handling connection for 10080
+
+
+curl http://127.0.0.1:10080
+
+{"message":"Hello"}
+
+curl http://127.0.0.1:10080/secure
+
+authorization failed
+
+
+curl -u user http://127.0.0.1:10080/login
+
+Enter host password for user 'user':
+{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJleHAiOjE1MjE4MzQ1ODEsImlhdCI6MTUyMTU3NTM4MSwiaXNzIjoiYXV0aC5zZXJ2aWNlIiwic3ViIjoidXNlciJ9.8ZoOnwAuhnbiz7inHRB5kZVxB1Vj6zdKmsDmjRHnAD4"}
+
+
+
+TOKEN=$(curl http://127.0.0.1:10080/login -u user|jq -r '.token')
+
+Enter host password for user 'user':
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   222  100   222    0     0    402      0 --:--:-- --:--:-- --:--:--   402
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$
+
+
+
+curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:10080/secure
+
+{"message":"Hello"}
+
+
+
+kubectl logs monolith
+
+2018/03/20 19:44:06 Starting server...
+2018/03/20 19:44:06 Health service listening on 0.0.0.0:81
+2018/03/20 19:44:06 HTTP service listening on 0.0.0.0:80
+127.0.0.1:42718 - - [Tue, 20 Mar 2018 19:47:46 UTC] "GET / HTTP/1.1" curl/7.52.1
+127.0.0.1:42776 - - [Tue, 20 Mar 2018 19:48:37 UTC] "GET /secure HTTP/1.1" curl/7.52.1
+127.0.0.1:42854 - - [Tue, 20 Mar 2018 19:49:41 UTC] "GET /login HTTP/1.1" curl/7.52.1
+127.0.0.1:42908 - - [Tue, 20 Mar 2018 19:50:32 UTC] "GET /login HTTP/1.1" curl/7.52.1
+127.0.0.1:42946 - - [Tue, 20 Mar 2018 19:50:59 UTC] "GET /secure HTTP/1.1" curl/7.52.1
+127.0.0.1:43004 - - [Tue, 20 Mar 2018 19:51:49 UTC] "GET /login HTTP/1.1" curl/7.52.1
+127.0.0.1:43042 - - [Tue, 20 Mar 2018 19:52:15 UTC] "GET /secure HTTP/1.1" curl/7.52.1
+
+kubectl logs -f monolith
+
+2018/03/20 19:44:06 Starting server...
+2018/03/20 19:44:06 Health service listening on 0.0.0.0:81
+2018/03/20 19:44:06 HTTP service listening on 0.0.0.0:80
+127.0.0.1:42718 - - [Tue, 20 Mar 2018 19:47:46 UTC] "GET / HTTP/1.1" curl/7.52.1
+127.0.0.1:42776 - - [Tue, 20 Mar 2018 19:48:37 UTC] "GET /secure HTTP/1.1" curl/7.52.1
+127.0.0.1:42854 - - [Tue, 20 Mar 2018 19:49:41 UTC] "GET /login HTTP/1.1" curl/7.52.1
+127.0.0.1:42908 - - [Tue, 20 Mar 2018 19:50:32 UTC] "GET /login HTTP/1.1" curl/7.52.1
+127.0.0.1:42946 - - [Tue, 20 Mar 2018 19:50:59 UTC] "GET /secure HTTP/1.1" curl/7.52.1
+127.0.0.1:43004 - - [Tue, 20 Mar 2018 19:51:49 UTC] "GET /login HTTP/1.1" curl/7.52.1
+127.0.0.1:43042 - - [Tue, 20 Mar 2018 19:52:15 UTC] "GET /secure HTTP/1.1" curl/7.52.1
+
+
+
+
+
+127.0.0.1:43144 - - [Tue, 20 Mar 2018 19:53:41 UTC] "GET /secure HTTP/1.1" curl/7.52.1
+
+
+
+curl http://127.0.0.1:10080
+
+127.0.0.1:43182 - - [Tue, 20 Mar 2018 19:54:13 UTC] "GET / HTTP/1.1" curl/7.52.1
+
+kubectl exec monolith --stdin --tty -c monolith /bin/sh
+
+/ #
+
+
+
+ping -c 3 google.com
+
+/ # ping -c 3 google.com
+PING google.com (74.125.124.139): 56 data bytes
+64 bytes from 74.125.124.139: seq=0 ttl=51 time=0.817 ms
+64 bytes from 74.125.124.139: seq=1 ttl=51 time=0.387 ms
+64 bytes from 74.125.124.139: seq=2 ttl=51 time=0.410 ms
+
+--- google.com ping statistics ---
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 0.387/0.538/0.817 ms
+/ #
+
+
+exit
+
+kubectl port-forward
+
+Ctrl+C
+
+
+
+cat pods/healthy-monolith.yaml
+
+kubectl create -f pods/healthy-monolith.yaml
+
+kubectl describe pod healthy-monolith
+
+
+kubectl port-forward healthy-monolith 10081:81
+
+curl http://127.0.0.1:10081/readiness/status
+
+kubectl get pods healthy-monolith -w
+
+kubectl describe pods healthy-monolith
+
+curl http://127.0.0.1:10081/readiness/status
+
+kubectl get pods healthy-monolith
+
+
+kubectl port-forward healthy-monolith 10081:81
+
+curl http://127.0.0.1:10081/healthz/status
+
+kubectl get pods healthy-monolith -w
+
+kubectl describe pods healthy-monolith
+
+
+secure-monolith
+
+kubectl create secret generic tls-certs --from-file tls/
+
+kubectl create configmap nginx-proxy-conf --from-file nginx/proxy.conf
+
+cat nginx/proxy.conf
+
+cat pods/secure-monolith.yaml
+
+kubectl create -f pods/secure-monolith.yaml
+
+cat services/monolith.yaml
+
+kubectl create -f services/monolith.yaml
+
+gcloud compute firewall-rules create allow-monolith-nodeport --allow=tcp:31000
+
+gcloud compute instances list
+
+https://<EXTERNAL_IP>:31000
+
+kubectl get services monolith
+
+kubectl describe services monolith
+
+
+kubectl get pods -l "app=monolith"
+
+kubectl get pods -l "app=monolith,secure=enabled"
+
+kubectl label pods secure-monolith 'secure=enabled'
+
+kubectl get pods secure-monolith --show-labels
+
+kubectl get endpoints monolith
+
+gcloud compute instances list | grep gke-
+
+https://<EXTERNAL_IP>:31000
+
+
+==============================
+
+Terminal 1
+
+
+327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl create -f pods/monolith.yaml
+pod "monolith" created
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl get pods
+NAME       READY     STATUS    RESTARTS   AGE
+monolith   1/1       Running   0          19s
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl describe
+You must specify the type of resource to describe. Valid resource types include:
+
+    * all
+    * certificatesigningrequests (aka 'csr')
+    * clusterrolebindings
+    * clusterroles
+    * clusters (valid only for federation apiservers)
+    * componentstatuses (aka 'cs')
+    * configmaps (aka 'cm')
+    * controllerrevisions
+    * cronjobs
+    * customresourcedefinition (aka 'crd')
+    * daemonsets (aka 'ds')
+    * deployments (aka 'deploy')
+    * endpoints (aka 'ep')
+    * events (aka 'ev')
+    * horizontalpodautoscalers (aka 'hpa')
+    * ingresses (aka 'ing')
+    * jobs
+    * limitranges (aka 'limits')
+    * namespaces (aka 'ns')
+    * networkpolicies (aka 'netpol')
+    * nodes (aka 'no')
+    * persistentvolumeclaims (aka 'pvc')
+    * persistentvolumes (aka 'pv')
+    * poddisruptionbudgets (aka 'pdb')
+    * podpreset
+    * pods (aka 'po')
+    * podsecuritypolicies (aka 'psp')
+    * podtemplates
+    * replicasets (aka 'rs')
+    * replicationcontrollers (aka 'rc')
+    * resourcequotas (aka 'quota')
+    * rolebindings
+    * roles
+    * secrets
+    * serviceaccounts (aka 'sa')
+    * services (aka 'svc')
+    * statefulsets
+    * storageclasses
+    error: Required resource not specified.
+See 'kubectl describe -h' for help and examples.
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl port-forward monolith 10080:80
+Forwarding from 127.0.0.1:10080 -> 80
+Handling connection for 10080
+Handling connection for 10080
+Handling connection for 10080
+Handling connection for 10080
+Handling connection for 10080
+Handling connection for 10080
+Handling connection for 10080
+Handling connection for 10080
+Handling connection for 10080
+^Cgoogle294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ ^C
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl describe pods healthy-monolith
+Name:         healthy-monolith
+Namespace:    default
+Node:         gke-bootcamp-default-pool-2f76c4cb-jmh9/10.128.0.5
+Start Time:   Tue, 20 Mar 2018 16:58:13 -0300
+Labels:       app=monolith
+Annotations:  <none>
+Status:       Running
+IP:           10.48.2.5
+Containers:
+  monolith:
+    Container ID:   docker://5dcaa3beb7470b6c7059693f0d108d3b26f20fd841243f295bd041d2ffd50a24
+    Image:          kelseyhightower/monolith:1.0.0
+    Image ID:       docker-pullable://kelseyhightower/monolith@sha256:72c3f41b6b01c21d9fdd2f45a89c6e5d59b8299b52d7dd0c9491745e73db3a35
+    Ports:          80/TCP, 81/TCP
+    State:          Running
+      Started:      Tue, 20 Mar 2018 16:58:16 -0300
+    Ready:          False
+    Restart Count:  0
+    Limits:
+      cpu:     200m
+      memory:  10Mi
+    Requests:
+      cpu:        200m
+      memory:     10Mi
+    Liveness:     http-get http://:81/healthz delay=5s timeout=5s period=15s #success=1 #failure=3
+    Readiness:    http-get http://:81/readiness delay=5s timeout=1s period=10s #success=1 #failure=3
+    Environment:  <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-t4smh (ro)
+Conditions:
+  Type           Status
+  Initialized    True
+  Ready          False
+  PodScheduled   True
+Volumes:
+  default-token-t4smh:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-t4smh
+    Optional:    false
+QoS Class:       Guaranteed
+Node-Selectors:  <none>
+Tolerations:     node.alpha.kubernetes.io/notReady:NoExecute for 300s
+                 node.alpha.kubernetes.io/unreachable:NoExecute for 300s
+Events:
+  Type     Reason                 Age               From                                              Message
+  ----     ------                 ----              ----                                              -------
+  Normal   Scheduled              1m                default-scheduler                                 Successfully assigned healthy-monolith to gke-bootcamp-default-pool-2f76c4cb-jmh9
+  Normal   SuccessfulMountVolume  1m                kubelet, gke-bootcamp-default-pool-2f76c4cb-jmh9  MountVolume.SetUp succeeded for volume "default-token-t4smh"
+  Normal   Pulling                1m                kubelet, gke-bootcamp-default-pool-2f76c4cb-jmh9  pulling image "kelseyhightower/monolith:1.0.0"
+  Normal   Pulled                 1m                kubelet, gke-bootcamp-default-pool-2f76c4cb-jmh9  Successfully pulled image "kelseyhightower/monolith:1.0.0"
+  Normal   Created                1m                kubelet, gke-bootcamp-default-pool-2f76c4cb-jmh9  Created container
+  Normal   Started                1m                kubelet, gke-bootcamp-default-pool-2f76c4cb-jmh9  Started container
+  Warning  Unhealthy              5s (x4 over 35s)  kubelet, gke-bootcamp-default-pool-2f76c4cb-jmh9  Readiness probe failed: HTTP probe failed with statuscode: 503
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ curl http://127.0.0.1:10081/readiness/status
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl get pods healthy-monolith
+NAME               READY     STATUS    RESTARTS   AGE
+healthy-monolith   1/1       Running   0          2m
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl create secret generic tls-certs --from-file tls/
+secret "tls-certs" created
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl create configmap nginx-proxy-conf --from-file nginx/proxy.conf
+configmap "nginx-proxy-conf" created
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl create -f pods/secure-monolith.yaml
+pod "secure-monolith" created
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl create -f services/monolith.yaml
+service "monolith" created
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ gcloud compute firewall-rules create allow-monolith-nodeport --allow=tcp:31000
+Creating firewall...|Created [https://www.googleapis.com/compute/v1/projects/qwiklabs-gcp-d2aafa63878ef8c9/global/firewalls/allow-monolith-nodeport].
+Creating firewall...done.
+NAME                     NETWORK  DIRECTION  PRIORITY  ALLOW      DENY
+allow-monolith-nodeport  default  INGRESS    1000      tcp:31000
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$
+
+
+==============================
+
+Terminal 2
+
+
+Welcome to Cloud Shell! Type "help" to get started.
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ kubectl port-forward
+error: POD is required for port-forward
+See 'kubectl port-forward -h' for help and examples.
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ curl http://127.0.0.1:10080
+{"message":"Hello"}
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ curl http://127.0.0.1:10080/secure
+authorization failed
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ curl -u user http://127.0.0.1:10080/login
+Enter host password for user 'user':
+{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJleHAiOjE1MjE4MzQ1ODEsImlhdCI6MTUyMTU3NTM4MSwiaXNzIjoiYXV0aC5zZXJ2aWNlIiwic3ViIjoidXNlciJ9.8ZoOnwAuhnbiz7inHRB5kZVxB1Vj6zdKmsDmjRHnAD4"}
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ TOKEN=$(curl http://127.0.0.1:10080/login -u user|jq -r '.token')
+Enter host password for user 'user':
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100    21  100    21    0     0     33      0 --:--:-- --:--:-- --:--:--    33
+parse error: Invalid numeric literal at line 1, column 14
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:10080/secure
+authorization failed
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ TOKEN=$(curl http://127.0.0.1:10080/login -u user|jq -r '.token')
+Enter host password for user 'user':
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   222  100   222    0     0    402      0 --:--:-- --:--:-- --:--:--   402
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:10080/secure
+{"message":"Hello"}
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ kubectl logs monolith
+2018/03/20 19:44:06 Starting server...
+2018/03/20 19:44:06 Health service listening on 0.0.0.0:81
+2018/03/20 19:44:06 HTTP service listening on 0.0.0.0:80
+127.0.0.1:42718 - - [Tue, 20 Mar 2018 19:47:46 UTC] "GET / HTTP/1.1" curl/7.52.1
+127.0.0.1:42776 - - [Tue, 20 Mar 2018 19:48:37 UTC] "GET /secure HTTP/1.1" curl/7.52.1
+127.0.0.1:42854 - - [Tue, 20 Mar 2018 19:49:41 UTC] "GET /login HTTP/1.1" curl/7.52.1
+127.0.0.1:42908 - - [Tue, 20 Mar 2018 19:50:32 UTC] "GET /login HTTP/1.1" curl/7.52.1
+127.0.0.1:42946 - - [Tue, 20 Mar 2018 19:50:59 UTC] "GET /secure HTTP/1.1" curl/7.52.1
+127.0.0.1:43004 - - [Tue, 20 Mar 2018 19:51:49 UTC] "GET /login HTTP/1.1" curl/7.52.1
+127.0.0.1:43042 - - [Tue, 20 Mar 2018 19:52:15 UTC] "GET /secure HTTP/1.1" curl/7.52.1
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:10080/secure
+{"message":"Hello"}
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ curl http://127.0.0.1:10080
+{"message":"Hello"}
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ kubectl exec monolith --stdin --tty -c monolith /bin/sh
+/ # ping -c 3 google.com
+PING google.com (74.125.124.139): 56 data bytes
+64 bytes from 74.125.124.139: seq=0 ttl=51 time=0.817 ms
+64 bytes from 74.125.124.139: seq=1 ttl=51 time=0.387 ms
+64 bytes from 74.125.124.139: seq=2 ttl=51 time=0.410 ms
+
+--- google.com ping statistics ---
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 0.387/0.538/0.817 ms
+/ # exit
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ kubectl create -f pods/healthy-monolith.yaml
+error: the path "pods/healthy-monolith.yaml" does not exist
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ curl http://127.0.0.1:10081/readiness/status
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ kubectl get pods healthy-monolith -w
+NAME               READY     STATUS    RESTARTS   AGE
+healthy-monolith   1/1       Running   0          1m
+healthy-monolith   0/1       Running   0         1m
+healthy-monolith   1/1       Running   0         2m
+
+
+
+==============================
+
+Terminal 3
+
+Welcome to Cloud Shell! Type "help" to get started.
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ kubectl logs -F monolith
+Error: unknown shorthand flag: 'F' in -F
+Aliases:
+logs, log
+Examples:
+  # Return snapshot logs from pod nginx with only one container
+  kubectl logs nginx
+  # Return snapshot logs for the pods defined by label app=nginx
+  kubectl logs -lapp=nginx
+  # Return snapshot of previous terminated ruby container logs from pod web-1
+  kubectl logs -p -c ruby web-1
+  # Begin streaming the logs of the ruby container in pod web-1
+  kubectl logs -f -c ruby web-1
+  # Display only the most recent 20 lines of output in pod nginx
+  kubectl logs --tail=20 nginx
+  # Show all logs from pod nginx written in the last hour
+  kubectl logs --since=1h nginx
+  # Return snapshot logs from first container of a job named hello
+  kubectl logs job/hello
+  # Return snapshot logs from container nginx-1 of a deployment named nginx
+  kubectl logs deployment/nginx -c nginx-1
+Options:
+  -c, --container='': Print the logs of this container
+  -f, --follow=false: Specify if the logs should be streamed.
+      --include-extended-apis=true: If true, include definitions of new APIs via calls to the API server. [default true]
+      --interactive=false: If true, prompt the user for input when required.
+      --limit-bytes=0: Maximum bytes of logs to return. Defaults to no limit.
+      --pod-running-timeout=20s: The length of time (like 5s, 2m, or 3h, higher than zero) to wait until at least one pod is running
+  -p, --previous=false: If true, print the logs for the previous instance of the container in a pod if it exists.
+  -l, --selector='': Selector (label query) to filter on.
+      --since=0s: Only return logs newer than a relative duration like 5s, 2m, or 3h. Defaults to all logs. Only one of since-time / since may be used.
+      --since-time='': Only return logs after a specific date (RFC3339). Defaults to all logs. Only one of since-time / since may be used.
+      --tail=-1: Lines of recent log file to display. Defaults to -1 with no selector, showing all log lines otherwise 10, if a selector is provided.
+      --timestamps=false: Include timestamps on each line in the log output
+Usage:
+  kubectl logs [-f] [-p] (POD | TYPE/NAME) [-c CONTAINER] [options]
+Use "kubectl options" for a list of global command-line options (applies to all commands).
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ kubectl logs -f monolith
+2018/03/20 19:44:06 Starting server...
+2018/03/20 19:44:06 Health service listening on 0.0.0.0:81
+2018/03/20 19:44:06 HTTP service listening on 0.0.0.0:80
+127.0.0.1:42718 - - [Tue, 20 Mar 2018 19:47:46 UTC] "GET / HTTP/1.1" curl/7.52.1
+127.0.0.1:42776 - - [Tue, 20 Mar 2018 19:48:37 UTC] "GET /secure HTTP/1.1" curl/7.52.1
+127.0.0.1:42854 - - [Tue, 20 Mar 2018 19:49:41 UTC] "GET /login HTTP/1.1" curl/7.52.1
+127.0.0.1:42908 - - [Tue, 20 Mar 2018 19:50:32 UTC] "GET /login HTTP/1.1" curl/7.52.1
+127.0.0.1:42946 - - [Tue, 20 Mar 2018 19:50:59 UTC] "GET /secure HTTP/1.1" curl/7.52.1
+127.0.0.1:43004 - - [Tue, 20 Mar 2018 19:51:49 UTC] "GET /login HTTP/1.1" curl/7.52.1
+127.0.0.1:43042 - - [Tue, 20 Mar 2018 19:52:15 UTC] "GET /secure HTTP/1.1" curl/7.52.1
+
+
+
+
+
+127.0.0.1:43144 - - [Tue, 20 Mar 2018 19:53:41 UTC] "GET /secure HTTP/1.1" curl/7.52.1
+127.0.0.1:43182 - - [Tue, 20 Mar 2018 19:54:13 UTC] "GET / HTTP/1.1" curl/7.52.1
+^C
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ cat pods/healthy-monolith.yaml
+cat: pods/healthy-monolith.yaml: No such file or directory
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ ls
+orchestrate-with-kubernetes  README-cloudshell.txt
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~$ cd orchestrate-with-kubernetes/kubernetes/
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ cat pods/healthy-monolith.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "healthy-monolith"
+  labels:
+    app: monolith
+spec:
+  containers:
+    - name: monolith
+      image: kelseyhightower/monolith:1.0.0
+      ports:
+        - name: http
+          containerPort: 80
+        - name: health
+          containerPort: 81
+      resources:
+        limits:
+          cpu: 0.2
+          memory: "10Mi"
+      livenessProbe:
+        httpGet:
+          path: /healthz
+          port: 81
+          scheme: HTTP
+        initialDelaySeconds: 5
+        periodSeconds: 15
+        timeoutSeconds: 5
+      readinessProbe:
+        httpGet:
+          path: /readiness
+          port: 81
+          scheme: HTTP
+        initialDelaySeconds: 5
+        timeoutSeconds: 1
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl create -f pods/healthy-monolith.yaml
+pod "healthy-monolith" created
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl describe pod healthy-monolith
+Name:         healthy-monolith
+Namespace:    default
+Node:         gke-bootcamp-default-pool-2f76c4cb-jmh9/10.128.0.5
+Start Time:   Tue, 20 Mar 2018 16:58:13 -0300
+Labels:       app=monolith
+Annotations:  <none>
+Status:       Running
+IP:           10.48.2.5
+Containers:
+  monolith:
+    Container ID:   docker://5dcaa3beb7470b6c7059693f0d108d3b26f20fd841243f295bd041d2ffd50a24
+    Image:          kelseyhightower/monolith:1.0.0
+    Image ID:       docker-pullable://kelseyhightower/monolith@sha256:72c3f41b6b01c21d9fdd2f45a89c6e5d59b8299b52d7dd0c9491745e73db3a35
+    Ports:          80/TCP, 81/TCP
+    State:          Running
+      Started:      Tue, 20 Mar 2018 16:58:16 -0300
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     200m
+      memory:  10Mi
+    Requests:
+      cpu:        200m
+      memory:     10Mi
+    Liveness:     http-get http://:81/healthz delay=5s timeout=5s period=15s #success=1 #failure=3
+    Readiness:    http-get http://:81/readiness delay=5s timeout=1s period=10s #success=1 #failure=3
+    Environment:  <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-t4smh (ro)
+Conditions:
+  Type           Status
+  Initialized    True
+  Ready          True
+  PodScheduled   True
+Volumes:
+  default-token-t4smh:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-t4smh
+    Optional:    false
+QoS Class:       Guaranteed
+Node-Selectors:  <none>
+Tolerations:     node.alpha.kubernetes.io/notReady:NoExecute for 300s
+                 node.alpha.kubernetes.io/unreachable:NoExecute for 300s
+Events:
+  Type    Reason                 Age   From                                              Message
+  ----    ------                 ----  ----                                              -------
+  Normal  Scheduled              15s   default-scheduler                                 Successfully assigned healthy-monolith to gke-bootcamp-default-pool-2f76c4cb-jmh9
+  Normal  SuccessfulMountVolume  15s   kubelet, gke-bootcamp-default-pool-2f76c4cb-jmh9  MountVolume.SetUp succeeded for volume "default-token-t4smh"
+  Normal  Pulling                14s   kubelet, gke-bootcamp-default-pool-2f76c4cb-jmh9  pulling image "kelseyhightower/monolith:1.0.0"
+  Normal  Pulled                 12s   kubelet, gke-bootcamp-default-pool-2f76c4cb-jmh9  Successfully pulled image "kelseyhightower/monolith:1.0.0"
+  Normal  Created                12s   kubelet, gke-bootcamp-default-pool-2f76c4cb-jmh9  Created container
+  Normal  Started                12s   kubelet, gke-bootcamp-default-pool-2f76c4cb-jmh9  Started container
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl port-forward healthy-monolith 10081:81
+Forwarding from 127.0.0.1:10081 -> 81
+Handling connection for 10081
+Handling connection for 10081
+^Cgoogle294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ ^C
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ ^C
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ gcloud compute instances list
+NAME                                     ZONE           MACHINE_TYPE   PREEMPTIBLE  INTERNAL_IP  EXTERNAL_IP      STATUS
+gke-bootcamp-default-pool-2f76c4cb-df22  us-central1-a  n1-standard-1               10.128.0.2   35.192.188.205   RUNNING
+gke-bootcamp-default-pool-2f76c4cb-jmh9  us-central1-a  n1-standard-1               10.128.0.5   35.225.172.22    RUNNING
+gke-bootcamp-default-pool-2f76c4cb-s1bw  us-central1-a  n1-standard-1               10.128.0.3   35.226.229.252   RUNNING
+gke-bootcamp-default-pool-2f76c4cb-trnp  us-central1-a  n1-standard-1               10.128.0.4   104.198.163.100  RUNNING
+gke-bootcamp-default-pool-2f76c4cb-vct6  us-central1-a  n1-standard-1               10.128.0.6   35.188.166.94    RUNNING
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl get pods -l "app=monolith"
+NAME               READY     STATUS    RESTARTS   AGE
+healthy-monolith   1/1       Running   0          4m
+monolith           1/1       Running   0          18m
+secure-monolith    2/2       Running   0          1m
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl get pods -l "app=monolith,secure=enabled"
+No resources found.
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl label pods secure-monolith 'secure=enabled'
+pod "secure-monolith" labeled
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl get pods secure-monolith --show-labels
+NAME              READY     STATUS    RESTARTS   AGE       LABELS
+secure-monolith   2/2       Running   0          1m        app=monolith,secure=enabled
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ kubectl get endpoints monolith
+NAME       ENDPOINTS       AGE
+monolith   10.48.0.6:443   1m
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$ gcloud compute instances list | grep gke-
+gke-bootcamp-default-pool-2f76c4cb-df22  us-central1-a  n1-standard-1               10.128.0.2   35.192.188.205   RUNNING
+gke-bootcamp-default-pool-2f76c4cb-jmh9  us-central1-a  n1-standard-1               10.128.0.5   35.225.172.22    RUNNING
+gke-bootcamp-default-pool-2f76c4cb-s1bw  us-central1-a  n1-standard-1               10.128.0.3   35.226.229.252   RUNNING
+gke-bootcamp-default-pool-2f76c4cb-trnp  us-central1-a  n1-standard-1               10.128.0.4   104.198.163.100  RUNNING
+gke-bootcamp-default-pool-2f76c4cb-vct6  us-central1-a  n1-standard-1               10.128.0.6   35.188.166.94    RUNNING
+google294327_student@qwiklabs-gcp-d2aafa63878ef8c9:~/orchestrate-with-kubernetes/kubernetes$
+
+
+
+
+
+
+
