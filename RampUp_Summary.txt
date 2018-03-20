@@ -5,3 +5,11 @@ Resumo do RampUp
 
 - Criei uma Imagem a partir do CentOS 7 com Java e mongodb instalado usando Packer;
 - Consigo subir uma VM instance usando esta Imagem.
+
+Next Steps
+
+- criar módulos no terraform
+- Docker 
+- Kubernetes
+
+vc já conseguiu montar um cluster kubernetes com terraform?
