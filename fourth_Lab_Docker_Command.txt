@@ -1,0 +1,373 @@
+===============================================================================
+
+
+Welcome to Cloud Shell! Type "help" to get started.
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~$ gcloud config set compute/zone us-central1-a
+Updated property [compute/zone].
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~$ git clone https://github.com/GoogleCloudPlatform/continuous-deployment-on-kubernetes.git
+Cloning into 'continuous-deployment-on-kubernetes'...
+remote: Counting objects: 709, done.
+remote: Compressing objects: 100% (20/20), done.
+remote: Total 709 (delta 7), reused 9 (delta 2), pack-reused 686
+Receiving objects: 100% (709/709), 1.12 MiB | 0 bytes/s, done.
+Resolving deltas: 100% (360/360), done.
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~$ cd continuous-deployment-on-kubernetes/
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$ gcloud container clusters create bootcamp --num-nodes 5 --scopes "https://www.googleapis.com/auth/projecthosting,storage-rw"
+WARNING: The behavior of --scopes will change in a future gcloud release: service-control and service-management scopes will no longer be added to what is specified in --scopes. To use these scopes, add them explicitly to --scopes. To use the new behavior, set container/new_scopes_behavior property (gcloud config set container/new_scopes_behavior true).
+WARNING: Starting in Kubernetes v1.10, new clusters will no longer get compute-rw and storage-ro scopes added to what is specified in --scopes (though the latter will remain included in the default --scopes). To use these scopes, add them explicitly to --scopes. To use the new behavior, set container/new_scopes_behavior property (gcloud config set container/new_scopes_behavior true).
+Creating cluster bootcamp.../
+
+
+===============================
+
+
+- Create the Jenkins home volume
+
+https://cloud.google.com/solutions/jenkins-on-kubernetes-engine
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$ gcloud compute images create jenkins-home-image --source-uri https://storage.googleapis.com/solutions-public-assets/jenkins-cd/jenkins-home-v3.tar.gz
+Created [https://www.googleapis.com/compute/v1/projects/qwiklabs-gcp-f13debf8b83db035/global/images/jenkins-home-image].
+NAME                PROJECT                        FAMILY  DEPRECATED  STATUS
+jenkins-home-image  qwiklabs-gcp-f13debf8b83db035                      READY
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$ gcloud compute disks create jenkins-home --image jenkins-home-image
+Created [https://www.googleapis.com/compute/v1/projects/qwiklabs-gcp-f13debf8b83db035/zones/us-central1-a/disks/jenkins-home].
+NAME          ZONE           SIZE_GB  TYPE         STATUS
+jenkins-home  us-central1-a  10       pd-standard  READY
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$
+
+- Configure Jenkins credentials
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$ export PASSWORD=`openssl rand -base64 15`; echo "Your password is $PASSWORD"; sed -i.bak s#CHANGE_ME#$PASSWORD# jenkins/k8s/options
+Your password is +9F3Y/IQHENszaNCSGT+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$
+
+
+https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
+
+kubectl create ns jenkins
+
+https://kubernetes.io/docs/concepts/configuration/secret/
+
+kubectl create secret generic jenkins --from-file=jenkins/k8s/options --namespace=jenkins
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$ kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
+Your active configuration is: [cloudshell-9260]
+clusterrolebinding "cluster-admin-binding" created
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$
+
+
+- Deploy Jenkins
+
+https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+
+https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services---service-types
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$ kubectl apply -f jenkins/k8s/
+deployment "jenkins" created
+Warning: kubectl apply should be used on resource created by either kubectl create --save-config or kubectl apply
+serviceaccount "default" configured
+clusterrolebinding "jenkins-admin" created
+service "jenkins-ui" created
+service "jenkins-discovery" created
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$ kubectl get pods -n jenkins
+NAME                      READY     STATUS              RESTARTS   AGE
+jenkins-87c47bbb8-jnrqf   0/1       ContainerCreating   0          24s
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$ kubectl get pods -n jenkins
+NAME                      READY     STATUS    RESTARTS   AGE
+jenkins-87c47bbb8-jnrqf   0/1       Running   0          1m
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$ kubectl get svc -n jenkins
+NAME                TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+jenkins-discovery   ClusterIP   10.51.240.80    <none>        50000/TCP        1m
+jenkins-ui          NodePort    10.51.252.158   <none>        8080:31988/TCP   1m
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /tmp/tls.key -out /tmp/tls.crt -subj "/CN=jenkins/O=jenkins"
+Generating a 2048 bit RSA private key
+.............................................................+++
+............................................................................+++
+writing new private key to '/tmp/tls.key'
+-----
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$ kubectl create secret generic tls --from-file=/tmp/tls.crt --from-file=/tmp/tls.key -n jenkins
+secret "tls" created
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$ kubectl apply -f jenkins/k8s/lb/ingress.yaml
+ingress "jenkins" created
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$
+
+- Connect to Jenkins
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$ kubectl describe ingress jenkins --namespace jenkins
+Name:             jenkins
+Namespace:        jenkins
+Address:
+Default backend:  jenkins-ui:8080 (10.48.3.3:8080)
+TLS:
+  tls terminates
+Rules:
+  Host  Path  Backends
+  ----  ----  --------
+  *     *     jenkins-ui:8080 (10.48.3.3:8080)
+Annotations:
+Events:
+  Type    Reason  Age   From                     Message
+  ----    ------  ----  ----                     -------
+  Normal  ADD     26s   loadbalancer-controller  jenkins/jenkins
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$
+
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$ kubectl describe ingress jenkins --namespace jenkins
+Name:             jenkins
+Namespace:        jenkins
+Address:          35.227.202.177
+Default backend:  jenkins-ui:8080 (10.48.3.3:8080)
+TLS:
+  tls terminates
+Rules:
+  Host  Path  Backends
+  ----  ----  --------
+  *     *     jenkins-ui:8080 (10.48.3.3:8080)
+Annotations:
+  backends:               {"k8s-be-31988--2e7d8711998793e6":"HEALTHY"}
+  forwarding-rule:        k8s-fw-jenkins-jenkins--2e7d8711998793e6
+  https-forwarding-rule:  k8s-fws-jenkins-jenkins--2e7d8711998793e6
+  https-target-proxy:     k8s-tps-jenkins-jenkins--2e7d8711998793e6
+  static-ip:              k8s-fw-jenkins-jenkins--2e7d8711998793e6
+  url-map:                k8s-um-jenkins-jenkins--2e7d8711998793e6
+  ssl-cert:               k8s-ssl-jenkins-jenkins--2e7d8711998793e6
+  target-proxy:           k8s-tp-jenkins-jenkins--2e7d8711998793e6
+Events:
+  Type    Reason   Age                From                     Message
+  ----    ------   ----               ----                     -------
+  Normal  ADD      14m                loadbalancer-controller  jenkins/jenkins
+  Normal  CREATE   13m                loadbalancer-controller  ip: 35.227.202.177
+  Normal  Service  10s (x5 over 13m)  loadbalancer-controller  default backend set to jenkins-ui:31988
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$
+
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$ echo "Jenkins URL: https://`kubectl get ingress jenkins -n jenkins -o jsonpath='{.status.loadBalancer.ingress[0].ip}'`"; echo "Your username/password:  jenkins/$PASSWORD"
+Jenkins URL: https://35.227.202.177
+Your username/password:  jenkins/+9F3Y/IQHENszaNCSGT+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$
+
+
+- Deploy the application
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes$ cd sample-app/
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ ls -ltr
+total 28
+-rw-r--r-- 1 google299255_student google299255_student  872 Mar 22 17:29 main_test.go
+-rw-r--r-- 1 google299255_student google299255_student 4187 Mar 22 17:29 main.go
+drwxr-xr-x 6 google299255_student google299255_student 4096 Mar 22 17:29 k8s
+-rw-r--r-- 1 google299255_student google299255_student 2336 Mar 22 17:29 Jenkinsfile
+-rw-r--r-- 1 google299255_student google299255_student 2270 Mar 22 17:29 html.go
+-rw-r--r-- 1 google299255_student google299255_student  623 Mar 22 17:29 Dockerfile
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ kubectl create ns production
+namespace "production" created
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ kubectl apply -f k8s/production -n production
+deployment "gceme-backend-production" created
+deployment "gceme-frontend-production" created
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ kubectl apply -f k8s/canary -n production
+deployment "gceme-backend-canary" created
+deployment "gceme-frontend-canary" created
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ kubectl apply -f k8s/services -n production
+service "gceme-backend" created
+service "gceme-frontend" created
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ kubectl scale deployment gceme-frontend-production -n production --replicas 4
+deployment "gceme-frontend-production" scaled
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ kubectl get pods -n production -l app=gceme -l role=frontend
+NAME                                         READY     STATUS              RESTARTS   AGE
+gceme-frontend-canary-6fd798d955-2t2hg       0/1       ContainerCreating   0          31s
+gceme-frontend-production-78bc654ff6-6g2z9   0/1       ContainerCreating   0          11s
+gceme-frontend-production-78bc654ff6-jgtc7   0/1       ContainerCreating   0          11s
+gceme-frontend-production-78bc654ff6-vjvhg   0/1       ContainerCreating   0          11s
+gceme-frontend-production-78bc654ff6-zvs6h   0/1       Running             0          42s
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ kubectl get pods -n production -l app=gceme -l role=backend
+NAME                                       READY     STATUS    RESTARTS   AGE
+gceme-backend-canary-5d9747794c-fp6nk      1/1       Running   0          40s
+gceme-backend-production-67dbc6bcd-l84h7   1/1       Running   0          51s
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$
+
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ kubectl get service gceme-frontend -n production
+NAME             TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+gceme-frontend   LoadBalancer   10.51.248.114   <pending>     80:31165/TCP   53s
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$
+
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ curl http://$FRONTEND_SERVICE_IP/version
+1.0.0
+
+
+- Create the Jenkins pipeline
+
+https://cloud.google.com/source-repositories/docs/
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ gcloud config list project
+[core]
+project = google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ cat Jenkinsfile
+node {
+  def project = 'qwiklabs-gcp-f13debf8b83db035'
+  def appName = 'gceme'
+  def feSvcName = "${appName}-frontend"
+  def imageTag = "gcr.io/${project}/${appName}:${env.BRANCH_NAME}.${env.BUILD_NUMBER}"
+
+  checkout scm
+
+  stage 'Build image'
+  sh("docker build -t ${imageTag} .")
+
+  stage 'Run Go tests'
+  sh("docker run ${imageTag} go test")
+
+  stage 'Push image to registry'
+  sh("gcloud docker -- push ${imageTag}")
+
+  stage "Deploy Application"
+  switch (env.BRANCH_NAME) {
+    // Roll out to canary environment
+    case "canary":
+        // Change deployed image in canary to the one we just built
+        sh("sed -i.bak 's#gcr.io/cloud-solutions-images/gceme:1.0.0#${imageTag}#' ./k8s/canary/*.yaml")
+        sh("kubectl --namespace=production apply -f k8s/services/")
+        sh("kubectl --namespace=production apply -f k8s/canary/")
+        sh("echo http://`kubectl --namespace=production get service/${feSvcName} --output=json | jq -r '.status.loadBalancer.ingress[0].ip'` > ${feSvcName}")
+        break
+
+    // Roll out to production
+    case "master":
+        // Change deployed image in canary to the one we just built
+        sh("sed -i.bak 's#gcr.io/cloud-solutions-images/gceme:1.0.0#${imageTag}#' ./k8s/production/*.yaml")
+        sh("kubectl --namespace=production apply -f k8s/services/")
+        sh("kubectl --namespace=production apply -f k8s/production/")
+        sh("echo http://`kubectl --namespace=production get service/${feSvcName} --output=json | jq -r '.status.loadBalancer.ingress[0].ip'` > ${feSvcName}")
+        break
+
+    // Roll out a dev environment
+    default:
+        // Create namespace if it doesn't exist
+        sh("kubectl get ns ${env.BRANCH_NAME} || kubectl create ns ${env.BRANCH_NAME}")
+        // Don't use public load balancing for development branches
+        sh("sed -i.bak 's#LoadBalancer#ClusterIP#' ./k8s/services/frontend.yaml")
+        sh("sed -i.bak 's#gcr.io/cloud-solutions-images/gceme:1.0.0#${imageTag}#' ./k8s/dev/*.yaml")
+        sh("kubectl --namespace=${env.BRANCH_NAME} apply -f k8s/services/")
+        sh("kubectl --namespace=${env.BRANCH_NAME} apply -f k8s/dev/")
+        echo 'To access your environment run `kubectl proxy`'
+        echo "Then access your service via http://localhost:8001/api/v1/proxy/namespaces/${env.BRANCH_NAME}/services/${feSvcName}:80/"
+  }
+}
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$
+
+
+
+
+
+
+
+Your active configuration is: [cloudshell-9260]
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$
+
+
+https://en.wikipedia.org/wiki/Cron#CRON_expression
+
+
+- Create the development environment
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ git checkout -b new-feature
+Switched to a new branch 'new-feature'
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$
+
+https://jenkins.io/doc/book/pipeline/
+
+
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ vi html.go
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ vi main.go
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ git add Jenkinsfile html.go main.go
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ git commit -m "Version 2.0.0"
+[new-feature d12f1c6] Version 2.0.0
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ git push origin new-feature
+Counting objects: 5, done.
+Compressing objects: 100% (5/5), done.
+Writing objects: 100% (5/5), 559 bytes | 0 bytes/s, done.
+Total 5 (delta 3), reused 0 (delta 0)
+remote: Resolving deltas: 100% (3/3)
+To https://source.developers.google.com/p/qwiklabs-gcp-f13debf8b83db035/r/default
+ * [new branch]      new-feature -> new-feature
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$
+
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ curl http://localhost:8001/api/v1/proxy/namespaces/new-feature/services/gceme-frontend:80/version
+{
+  "kind": "Status",
+  "apiVersion": "v1",
+  "metadata": {
+
+  },
+  "status": "Failure",
+  "message": "services \"gceme-frontend\" not found",
+  "reason": "NotFound",
+  "details": {
+    "name": "gceme-frontend",
+    "kind": "services"
+  },
+  "code": 404
+}google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ git checkout -b canary
+Switched to a new branch 'canary'
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ git push origin canary
+Total 0 (delta 0), reused 0 (delta 0)
+To https://source.developers.google.com/p/qwiklabs-gcp-f13debf8b83db035/r/default
+ * [new branch]      canary -> canary
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ export FRONTEND_SERVICE_IP=$(kubectl get -o jsonpath="{.status.loadBalancer.ingress[0].ip}" --namespace=production services gceme-frontend)
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ while true; do curl http://$FRONTEND_SERVICE_IP/version; sleep 1;  done
+1.0.0
+1.0.0
+1.0.0
+1.0.0
+1.0.0
+1.0.0
+1.0.0
+1.0.0
+1.0.0
+1.0.0
+1.0.0
+
+- Deploy to production
+
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ git checkout master
+Switched to branch 'master'
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ git merge canary
+Updating 54b1a6a..d12f1c6
+Fast-forward
+ Jenkinsfile | 2 +-
+ html.go     | 4 ++--
+ main.go     | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ git push origin master
+Total 0 (delta 0), reused 0 (delta 0)
+To https://source.developers.google.com/p/qwiklabs-gcp-f13debf8b83db035/r/default
+   54b1a6a..d12f1c6  master -> master
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ export FRONTEND_SERVICE_IP=$(kubectl get -o jsonpath="{.status.loadBalancer.ingress[0].ip}" --namespace=production services gceme-frontend)
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ while true; do curl http://$FRONTEND_SERVICE_IP/version; sleep 1;  done
+1.0.0
+1.0.0
+1.0.0
+1.0.0
+1.0.0
+^C
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$ ^C
+google299255_student@qwiklabs-gcp-f13debf8b83db035:~/continuous-deployment-on-kubernetes/sample-app$
+
+
+- Configure HTTP load balancing
